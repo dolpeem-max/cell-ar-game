@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAR Cell Explorer</title>
+    
+    <!-- 1. เรียกใช้งานไลบรารี model-viewer จาก Google -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    
+    <style>
+        body { margin: 0; background-color: #1a1a24; font-family: sans-serif; }
+        
+        /* ทำให้ AR Canvas เต็มหน้าจอมือถือ */
+        model-viewer {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ตกแต่งปุ่มเข้าโหมด AR */
+        #ar-button {
+            background-color: #00ccff;
+            color: #000;
+            border-radius: 8px;
+            border: none;
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        /* ตกแต่งกล่องข้อความอธิบายออร์แกเนลล์ (Hotspot) */
+        .HotspotAnnotation {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            display: none; /* ซ่อนไว้ก่อน จะโชว์เมื่อจิ้ม */
+            position: absolute;
+            transform: translate(-50%, -100%);
+            margin-top: -15px;
+            width: max-content;
+        }
+        
+        /* เมื่อจิ้มที่ปุ่ม (Focus) ให้แสดงกล่องข้อความ */
+        button[slot^="hotspot"]:focus .HotspotAnnotation {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 2. ใส่แท็ก model-viewer และเรียกไฟล์ 3D -->
+    <!-- แอตทริบิวต์ ar, camera-controls, auto-rotate คือหัวใจหลักที่ทำให้หมุนและเปิดกล้องได้ -->
+    <model-viewer 
+        src="cell.glb" 
+        alt="โมเดลสามมิติของเซลล์สัตว์"
+        camera-controls
+        auto-rotate
+        ar
+        ar-modes="webxr scene-viewer quick-look">
+        
+        <!-- 3. สร้างปุ่มจิ้ม (Hotspot) ชี้ไปที่ออร์แกเนลล์ต่างๆ -->
+        <!-- data-position คือพิกัด X Y Z บนโมเดล 3 มิติ (ต้องลองกะตัวเลขดูว่าออร์แกเนลล์อยู่ตรงไหน) -->
+        <button slot="hotspot-1" data-position="0.2 0.5 0.1" style="background: white; border-radius: 50%; width: 20px; height: 20px; border: none;">
+            <div class="HotspotAnnotation">
+                🔥 <b>Mitochondria</b><br>เปลี่ยนกลูโคสเป็น ATP
+            </div>
+        </button>
+
+        <button slot="hotspot-2" data-position="-0.1 0.8 -0.2" style="background: white; border-radius: 50%; width: 20px; height: 20px; border: none;">
+            <div class="HotspotAnnotation">
+                🧠 <b>Nucleus</b><br>เก็บข้อมูลพันธุกรรม (DNA)
+            </div>
+        </button>
+
+        <!-- ปุ่มสำหรับเปิดกล้อง AR -->
+        <button slot="ar-button" id="ar-button">
+            🚀 ดูเซลล์ทะลุจอ (ส่องบนโต๊ะ)
+        </button>
+        
+    </model-viewer>
+
+</body>
+</html>
