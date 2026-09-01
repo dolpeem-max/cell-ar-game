@@ -3,87 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR Cell Explorer</title>
+    <title>WebAR Plant Cell Explorer</title>
     
-    <!-- 1. เรียกใช้งานไลบรารี model-viewer จาก Google -->
+    <!-- เรียกใช้งานไลบรารี model-viewer -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     
     <style>
-        body { margin: 0; background-color: #1a1a24; font-family: sans-serif; }
+        body { margin: 0; background-color: #2b2b2b; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        /* ทำให้ AR Canvas เต็มหน้าจอมือถือ */
         model-viewer {
             width: 100vw;
             height: 100vh;
+            --poster-color: transparent;
         }
 
-        /* ตกแต่งปุ่มเข้าโหมด AR */
+        /* ปุ่ม AR ด้านล่าง */
         #ar-button {
-            background-color: #00ccff;
-            color: #000;
-            border-radius: 8px;
+            background-color: #ffffff;
+            color: #333;
+            border-radius: 20px;
             border: none;
             position: absolute;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 12px 24px;
+            font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             cursor: pointer;
         }
 
-        /* ตกแต่งกล่องข้อความอธิบายออร์แกเนลล์ (Hotspot) */
-        .HotspotAnnotation {
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            display: none; /* ซ่อนไว้ก่อน จะโชว์เมื่อจิ้ม */
-            position: absolute;
-            transform: translate(-50%, -100%);
-            margin-top: -15px;
-            width: max-content;
+        /* การตกแต่งปุ่มตัวเลข (Hotspot) ให้เหมือนภาพที่ 2 */
+        .hotspot-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            position: relative;
         }
-        
-        /* เมื่อจิ้มที่ปุ่ม (Focus) ให้แสดงกล่องข้อความ */
-        button[slot^="hotspot"]:focus .HotspotAnnotation {
-            display: block;
+
+        .hotspot-number {
+            background-color: rgba(40, 40, 50, 0.9);
+            color: white;
+            border: 1px solid #aaa;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+        }
+
+        /* กล่องคำอธิบายสีเข้ม (Annotation Box) */
+        .annotation-box {
+            background-color: rgba(20, 20, 25, 0.85); /* สีดำโปร่งแสง */
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            width: 220px;
+            text-align: left;
+            position: absolute;
+            top: 50%;
+            left: 40px; /* ให้กล่องเยื้องไปทางขวาของตัวเลข */
+            transform: translateY(-50%);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            pointer-events: none;
+        }
+
+        /* เมื่อคลิกหรือเอาเมาส์ชี้ที่ตัวเลข ให้โชว์กล่องข้อความ */
+        .hotspot-btn:focus .annotation-box,
+        .hotspot-btn:hover .annotation-box {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* การจัดรูปแบบข้อความ 3 บรรทัด */
+        .anno-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        .anno-function {
+            font-size: 13px;
+            font-weight: bold;
+            color: #4da6ff; /* เน้นสีให้หน้าที่หลักดูเด่นขึ้น */
+            margin-bottom: 5px;
+        }
+        .anno-desc {
+            font-size: 12px;
+            line-height: 1.4;
+            color: #dcdcdc;
         }
     </style>
 </head>
 <body>
 
-    <!-- 2. ใส่แท็ก model-viewer และเรียกไฟล์ 3D -->
-    <!-- แอตทริบิวต์ ar, camera-controls, auto-rotate คือหัวใจหลักที่ทำให้หมุนและเปิดกล้องได้ -->
     <model-viewer 
         src="cell.glb" 
-        alt="โมเดลสามมิติของเซลล์สัตว์"
+        alt="3D Plant Cell Model"
         camera-controls
         auto-rotate
         ar
-        ar-modes="webxr scene-viewer quick-look">
+        ar-modes="webxr scene-viewer quick-look"
+        shadow-intensity="1">
         
-        <!-- 3. สร้างปุ่มจิ้ม (Hotspot) ชี้ไปที่ออร์แกเนลล์ต่างๆ -->
-        <!-- data-position คือพิกัด X Y Z บนโมเดล 3 มิติ (ต้องลองกะตัวเลขดูว่าออร์แกเนลล์อยู่ตรงไหน) -->
-        <button slot="hotspot-1" data-position="0.2 0.5 0.1" style="background: white; border-radius: 50%; width: 20px; height: 20px; border: none;">
-            <div class="HotspotAnnotation">
-                🔥 <b>Mitochondria</b><br>เปลี่ยนกลูโคสเป็น ATP
+        <!-- จุดที่ 1: แวคิวโอล (อ้างอิงจากหมายเลข 1 ในภาพ) -->
+        <button slot="hotspot-vacuole" class="hotspot-btn" data-position="-0.2 0.1 0.4" data-normal="0 0 1">
+            <div class="hotspot-number">1</div>
+            <div class="annotation-box">
+                <div class="anno-name">แวคิวโอล (Vacuole)</div>
+                <div class="anno-function">หน้าที่: กักเก็บน้ำและรักษาสมดุล</div>
+                <div class="anno-desc">เป็นออร์แกเนลล์ที่มีเยื่อหุ้ม ภายในบรรจุน้ำ สารอาหาร และของเสีย ช่วยรักษาความเต่ง (Hydrostatic pressure) ภายในเซลล์พืช</div>
             </div>
         </button>
 
-        <button slot="hotspot-2" data-position="-0.1 0.8 -0.2" style="background: white; border-radius: 50%; width: 20px; height: 20px; border: none;">
-            <div class="HotspotAnnotation">
-                🧠 <b>Nucleus</b><br>เก็บข้อมูลพันธุกรรม (DNA)
+        <!-- จุดที่ 2: นิวเคลียส (อ้างอิงจากหมายเลข 2 ในภาพ) -->
+        <button slot="hotspot-nucleus" class="hotspot-btn" data-position="0.3 0.15 -0.1" data-normal="0 1 0">
+            <div class="hotspot-number">2</div>
+            <div class="annotation-box">
+                <div class="anno-name">นิวเคลียส (Nucleus)</div>
+                <div class="anno-function">หน้าที่: ศูนย์กลางควบคุมเซลล์</div>
+                <div class="anno-desc">โครงสร้างทรงกลมขนาดใหญ่ที่บรรจุสารพันธุกรรม (DNA) ทำหน้าที่ควบคุมการทำงาน การสร้างโปรตีน และการแบ่งเซลล์</div>
             </div>
         </button>
 
-        <!-- ปุ่มสำหรับเปิดกล้อง AR -->
+        <!-- จุดที่ 3: ไมโทคอนเดรีย (ดึงตัวอย่างเพิ่มเติมให้ครับ) -->
+        <button slot="hotspot-mito" class="hotspot-btn" data-position="0.5 0.3 0.2" data-normal="1 0 0">
+            <div class="hotspot-number">14</div>
+            <div class="annotation-box">
+                <div class="anno-name">ไมโทคอนเดรีย (Mitochondria)</div>
+                <div class="anno-function">หน้าที่: แหล่งสร้างพลังงาน</div>
+                <div class="anno-desc">ออร์แกเนลล์รูปร่างคล้ายเม็ดถั่ว ทำหน้าที่เผาผลาญสารอาหารเพื่อให้เกิดพลังงาน (ATP) สำหรับใช้ในกิจกรรมต่างๆ ของเซลล์</div>
+            </div>
+        </button>
+
+        <!-- ปุ่มสำหรับเข้าโหมด AR -->
         <button slot="ar-button" id="ar-button">
-            🚀 ดูเซลล์ทะลุจอ (ส่องบนโต๊ะ)
+            👁️ ดูเซลล์ในรูปแบบ AR
         </button>
         
     </model-viewer>
