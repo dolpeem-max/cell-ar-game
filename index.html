@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR Plant Cell Explorer</title>
+    <title>WebAR Cell Explorer</title>
     
+    <!-- 1. เรียกใช้งานไลบรารี model-viewer จาก Google -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     
     <style>
@@ -18,8 +19,8 @@
 
         /* ตกแต่งปุ่มเข้าโหมด AR */
         #ar-button {
-            background-color: #4CAF50; /* เปลี่ยนเป็นสีเขียวให้เข้ากับเซลล์พืช */
-            color: #fff;
+            background-color: #00ccff;
+            color: #000;
             border-radius: 8px;
             border: none;
             position: absolute;
@@ -33,116 +34,59 @@
             cursor: pointer;
         }
 
-        /* ตกแต่งจุด Hotspot */
-        .hotspot-btn {
-            background: rgba(255, 255, 255, 0.9); 
-            border-radius: 50%; 
-            width: 24px; 
-            height: 24px; 
-            border: 2px solid #4CAF50;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        /* ตกแต่งกล่องข้อความอธิบายออร์แกเนลล์ */
+        /* ตกแต่งกล่องข้อความอธิบายออร์แกเนลล์ (Hotspot) */
         .HotspotAnnotation {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 12px 16px;
+            padding: 10px 15px;
             border-radius: 8px;
             font-size: 14px;
-            line-height: 1.5;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            display: none; /* ซ่อนไว้ก่อน จะใช้ JS สั่งโชว์ */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            display: none; /* ซ่อนไว้ก่อน จะโชว์เมื่อจิ้ม */
             position: absolute;
             transform: translate(-50%, -100%);
-            margin-top: -20px;
+            margin-top: -15px;
             width: max-content;
-            max-width: 200px;
-            pointer-events: none; /* ป้องกันไม่ให้เผลอกดโดนกล่องข้อความ */
         }
         
-        /* คลาสสำหรับโชว์ข้อความ (สลับด้วย JavaScript) */
-        .HotspotAnnotation.show {
+        /* เมื่อจิ้มที่ปุ่ม (Focus) ให้แสดงกล่องข้อความ */
+        button[slot^="hotspot"]:focus .HotspotAnnotation {
             display: block;
         }
     </style>
 </head>
 <body>
 
+    <!-- 2. ใส่แท็ก model-viewer และเรียกไฟล์ 3D -->
+    <!-- แอตทริบิวต์ ar, camera-controls, auto-rotate คือหัวใจหลักที่ทำให้หมุนและเปิดกล้องได้ -->
     <model-viewer 
-        src="plant_cell.glb" 
-        alt="โมเดลสามมิติของเซลล์พืช"
+        src="cell.glb" 
+        alt="โมเดลสามมิติของเซลล์สัตว์"
         camera-controls
         auto-rotate
         ar
         ar-modes="webxr scene-viewer quick-look">
         
-        <button class="hotspot-btn" slot="hotspot-1" data-position="0.2 0.5 0.1">
+        <!-- 3. สร้างปุ่มจิ้ม (Hotspot) ชี้ไปที่ออร์แกเนลล์ต่างๆ -->
+        <!-- data-position คือพิกัด X Y Z บนโมเดล 3 มิติ (ต้องลองกะตัวเลขดูว่าออร์แกเนลล์อยู่ตรงไหน) -->
+        <button slot="hotspot-1" data-position="0.2 0.5 0.1" style="background: white; border-radius: 50%; width: 20px; height: 20px; border: none;">
             <div class="HotspotAnnotation">
-                🍃 <b>Chloroplast (คลอโรพลาสต์)</b><br>ทำหน้าที่สร้างอาหารให้เซลล์ด้วยกระบวนการสังเคราะห์ด้วยแสง
+                🔥 <b>Mitochondria</b><br>เปลี่ยนกลูโคสเป็น ATP
             </div>
         </button>
 
-        <button class="hotspot-btn" slot="hotspot-2" data-position="-0.1 0.8 -0.2">
+        <button slot="hotspot-2" data-position="-0.1 0.8 -0.2" style="background: white; border-radius: 50%; width: 20px; height: 20px; border: none;">
             <div class="HotspotAnnotation">
-                🧠 <b>Nucleus (นิวเคลียส)</b><br>ศูนย์กลางควบคุมการทำงานของเซลล์ และเก็บข้อมูลทางพันธุกรรม (DNA)
+                🧠 <b>Nucleus</b><br>เก็บข้อมูลพันธุกรรม (DNA)
             </div>
         </button>
 
-        <button class="hotspot-btn" slot="hotspot-3" data-position="0.5 0.2 0.0">
-            <div class="HotspotAnnotation">
-                🧱 <b>Cell Wall (ผนังเซลล์)</b><br>ให้ความแข็งแรงทนทาน และคงรูปร่างของเซลล์พืชเอาไว้
-            </div>
-        </button>
-
-        <button class="hotspot-btn" slot="hotspot-4" data-position="-0.3 0.3 0.2">
-            <div class="HotspotAnnotation">
-                💧 <b>Vacuole (แวคิวโอล)</b><br>ถุงขนาดใหญ่สำหรับเก็บสะสมน้ำ สารอาหาร และของเสีย
-            </div>
-        </button>
-
+        <!-- ปุ่มสำหรับเปิดกล้อง AR -->
         <button slot="ar-button" id="ar-button">
-            🌱 ดูเซลล์พืชทะลุจอ (AR)
+            🚀 ดูเซลล์ทะลุจอ (ส่องบนโต๊ะ)
         </button>
         
     </model-viewer>
-
-    <script>
-        // ดึงปุ่ม Hotspot ทั้งหมดมาเก็บไว้ในตัวแปร
-        const hotspots = document.querySelectorAll('.hotspot-btn');
-
-        hotspots.forEach(hotspot => {
-            // ใส่ Event Listener สำหรับตรวจจับการ 'คลิก'
-            hotspot.addEventListener('click', function(event) {
-                // ป้องกันไม่ให้ Event กระทบกับ model-viewer (เวลาหมุนจอ)
-                event.stopPropagation(); 
-
-                const annotation = this.querySelector('.HotspotAnnotation');
-                
-                // เช็คว่าถ้ากล่องนี้เปิดอยู่แล้ว ให้ปิดซะ
-                const isCurrentlyOpen = annotation.classList.contains('show');
-
-                // ซ่อนกล่องข้อความอื่นๆ ทั้งหมดก่อน (เพื่อให้เปิดได้ทีละกล่อง)
-                document.querySelectorAll('.HotspotAnnotation').forEach(box => {
-                    box.classList.remove('show');
-                });
-
-                // ถ้ากล่องนี้ยังไม่ถูกเปิด ให้ใส่คลาส 'show' เข้าไปเพื่อแสดงผล
-                if (!isCurrentlyOpen) {
-                    annotation.classList.add('show');
-                }
-            });
-        });
-
-        // หากผู้ใช้คลิกที่ว่างๆ (ที่ไม่ใช่ปุ่ม Hotspot) ให้ซ่อนข้อความทั้งหมด
-        const modelViewer = document.querySelector('model-viewer');
-        modelViewer.addEventListener('click', () => {
-            document.querySelectorAll('.HotspotAnnotation').forEach(box => {
-                box.classList.remove('show');
-            });
-        });
-    </script>
 
 </body>
 </html>
