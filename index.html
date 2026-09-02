@@ -9,19 +9,12 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     
     <style>
-        body { 
-            margin: 0; 
-            background-color: #2b2b2b; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            overflow: hidden; 
-        }
+        body { margin: 0; background-color: #2b2b2b; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
         
         model-viewer {
             width: 100vw;
             height: 100vh;
             --poster-color: transparent;
-            /* ป้องกันหน้าเว็บเลื่อนเมื่อใช้นิ้วหมุนโมเดลบนมือถือหรือ iPad */
-            touch-action: none; 
         }
 
         /* ปุ่ม AR ด้านล่าง */
@@ -68,11 +61,11 @@
 
         /* กล่องคำอธิบายสีเข้ม (Annotation Box) */
         .annotation-box {
-            background-color: rgba(20, 20, 25, 0.95);
+            background-color: rgba(20, 20, 25, 0.85);
             color: white;
             padding: 15px;
             border-radius: 8px;
-            width: 250px;
+            width: 250px; /* ขยายความกว้างเล็กน้อยเพื่อให้พอดีกับคำอธิบายยาว */
             text-align: left;
             position: absolute;
             top: 50%;
@@ -86,10 +79,9 @@
             z-index: 5;
         }
 
-        /* เมื่อคลิกหรือเอาเมาส์ชี้ที่ตัวเลข ให้โชว์กล่องข้อความ (รองรับทั้งคอมและ iPad) */
+        /* เมื่อคลิกหรือเอาเมาส์ชี้ที่ตัวเลข ให้โชว์กล่องข้อความ */
         .hotspot-btn:focus .annotation-box,
-        .hotspot-btn:hover .annotation-box,
-        .hotspot-btn.active .annotation-box {
+        .hotspot-btn:hover .annotation-box {
             opacity: 1;
             visibility: visible;
         }
@@ -118,7 +110,6 @@
 </head>
 <body>
 
-    <!-- สังเกตว่ามีการเพิ่ม scale และ ar-placement เข้ามาแล้ว -->
     <model-viewer 
         src="cell.glb" 
         alt="3D Plant Cell Model"
@@ -126,10 +117,6 @@
         auto-rotate
         ar
         ar-modes="webxr scene-viewer quick-look"
-        ar-scale="auto"
-        ar-placement="floor"
-        bounds="tight"
-        scale="0.002 0.002 0.002"
         shadow-intensity="1">
         
         <!-- 1. แวคิวโอลขนาดใหญ่ -->
@@ -208,11 +195,11 @@
             <div class="annotation-box">
                 <div class="anno-name">ร่างแหเอนโดพลาซึม (Endoplasmic Reticulum)</div>
                 <div class="anno-function">หน้าที่: สร้างและลำเลียงโปรตีนและลิพิด</div>
-                <div class="anno-desc">โครงสร้างท่อพับซ้อนกันอยู่รอบนิวเคลียส มีทั้งแบบขรุขระที่มีไรโบโซมเกาะเพื่อสร้างโปรตีน และแบบเรียบที่ช่วยสร้างไขมันและขจัดสารพิษ</div>
+                <div class="anno-desc">โครงสร้างชั้นนอกสุดสีเขียว สร้างจากเซลลูโลส ทำหน้าที่เหมือนกำแพงป้องกันไม่ให้เซลล์แตกเมื่อมีน้ำออสโมซิสเข้ามา และทำให้เซลล์พืชมีรูปทรงเหลี่ยมคงที่</div>
             </div>
         </button>
 
-        <!-- 9. เยื่อหุ้มเซลล์ -->
+        <!-- 9. เยื่อหุ้มเซลล์ (สมมติเป็นหมายเลข 20 เพื่อให้เข้ากับระบบ UI) -->
         <button slot="hotspot-membrane" class="hotspot-btn" data-position="-92.31 -21.03 -35.53" data-normal="-1 0 0">
             <div class="hotspot-number">9</div>
             <div class="annotation-box">
@@ -222,7 +209,7 @@
             </div>
         </button>
 
-        <!-- 10. ไรโบโซม -->
+        <!-- 10. ไรโบโซม (สมมติเป็นหมายเลข 21) -->
         <button slot="hotspot-ribosome" class="hotspot-btn" data-position="41.06 -21.73 113.96" data-normal="0 -1 0">
             <div class="hotspot-number">10</div>
             <div class="annotation-box">
@@ -239,39 +226,5 @@
         
     </model-viewer>
 
-    <!-- Script สำหรับแก้ไขปัญหาการแตะ (Touch) บนหน้าจอ iPad และมือถือ -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const hotspots = document.querySelectorAll('.hotspot-btn');
-            
-            // เมื่อผู้เล่นใช้นิ้วแตะที่ปุ่มหมายเลข
-            hotspots.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    // ปิดกล่องข้อความอันอื่นทั้งหมดก่อน
-                    hotspots.forEach(otherBtn => {
-                        if (otherBtn !== btn) {
-                            otherBtn.classList.remove('active');
-                        }
-                    });
-                    // สลับสถานะเปิด/ปิด กล่องข้อความที่ถูกกด
-                    btn.classList.toggle('active');
-                });
-            });
-
-            // ปิดกล่องข้อความเมื่อคลิกพื้นที่ว่างบนโมเดล 3D
-            const viewer = document.querySelector('model-viewer');
-            viewer.addEventListener('mousedown', (e) => {
-                if (!e.target.closest('.hotspot-btn')) {
-                    hotspots.forEach(btn => btn.classList.remove('active'));
-                }
-            });
-            
-            viewer.addEventListener('touchstart', (e) => {
-                if (!e.target.closest('.hotspot-btn')) {
-                    hotspots.forEach(btn => btn.classList.remove('active'));
-                }
-            });
-        });
-    </script>
 </body>
 </html>
