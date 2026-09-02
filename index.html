@@ -68,7 +68,7 @@
 
         /* กล่องคำอธิบายสีเข้ม (Annotation Box) */
         .annotation-box {
-            background-color: rgba(20, 20, 25, 0.85);
+            background-color: rgba(20, 20, 25, 0.95);
             color: white;
             padding: 15px;
             border-radius: 8px;
@@ -86,9 +86,10 @@
             z-index: 5;
         }
 
-        /* เมื่อคลิกหรือเอาเมาส์ชี้ที่ตัวเลข ให้โชว์กล่องข้อความ */
+        /* เมื่อคลิกหรือเอาเมาส์ชี้ที่ตัวเลข ให้โชว์กล่องข้อความ (รองรับทั้งคอมและ iPad) */
         .hotspot-btn:focus .annotation-box,
-        .hotspot-btn:hover .annotation-box {
+        .hotspot-btn:hover .annotation-box,
+        .hotspot-btn.active .annotation-box {
             opacity: 1;
             visibility: visible;
         }
@@ -117,8 +118,8 @@
 </head>
 <body>
 
+    <!-- สังเกตว่ามีการเพิ่ม scale และ ar-placement เข้ามาแล้ว -->
     <model-viewer 
-        id="cell-model"
         src="cell.glb" 
         alt="3D Plant Cell Model"
         camera-controls
@@ -238,5 +239,39 @@
         
     </model-viewer>
 
+    <!-- Script สำหรับแก้ไขปัญหาการแตะ (Touch) บนหน้าจอ iPad และมือถือ -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const hotspots = document.querySelectorAll('.hotspot-btn');
+            
+            // เมื่อผู้เล่นใช้นิ้วแตะที่ปุ่มหมายเลข
+            hotspots.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // ปิดกล่องข้อความอันอื่นทั้งหมดก่อน
+                    hotspots.forEach(otherBtn => {
+                        if (otherBtn !== btn) {
+                            otherBtn.classList.remove('active');
+                        }
+                    });
+                    // สลับสถานะเปิด/ปิด กล่องข้อความที่ถูกกด
+                    btn.classList.toggle('active');
+                });
+            });
+
+            // ปิดกล่องข้อความเมื่อคลิกพื้นที่ว่างบนโมเดล 3D
+            const viewer = document.querySelector('model-viewer');
+            viewer.addEventListener('mousedown', (e) => {
+                if (!e.target.closest('.hotspot-btn')) {
+                    hotspots.forEach(btn => btn.classList.remove('active'));
+                }
+            });
+            
+            viewer.addEventListener('touchstart', (e) => {
+                if (!e.target.closest('.hotspot-btn')) {
+                    hotspots.forEach(btn => btn.classList.remove('active'));
+                }
+            });
+        });
+    </script>
 </body>
 </html>
