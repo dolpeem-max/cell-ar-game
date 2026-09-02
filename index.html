@@ -8,7 +8,22 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     
     <style>
-     
+        /* กำหนดให้หน้าเว็บและโมเดลเต็มจอ 100% */
+        body { 
+            margin: 0; 
+            padding: 0;
+            background-color: #2b2b2b; /* สีหลังเข้มๆ แบบในโค้ดก่อนหน้าของคุณ */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            overflow: hidden; 
+        }
+        
+        model-viewer {
+            width: 100vw;
+            height: 100vh;
+            --poster-color: transparent;
+            outline: none;
+        }
+
         /* ปุ่ม AR ด้านล่าง */
         #ar-button {
             background-color: #ffffff;
@@ -33,6 +48,7 @@
             border: none;
             cursor: pointer;
             position: relative;
+            outline: none;
         }
 
         /* บังคับไม่ให้ปุ่มจางลงและดันให้อยู่หน้าสุดเมื่อถูกโฟกัสหรือชี้ */
@@ -65,7 +81,7 @@
             color: white;
             padding: 15px;
             border-radius: 8px;
-            width: 250px; /* ขยายความกว้างเล็กน้อยเพื่อให้พอดีกับคำอธิบายยาว */
+            width: 250px; 
             text-align: left;
             position: absolute;
             top: 50%;
@@ -76,7 +92,7 @@
             transition: opacity 0.3s ease, visibility 0.3s;
             box-shadow: 0 4px 15px rgba(0,0,0,0.6);
             pointer-events: none;
-            z-index: 9999; /* ดันกล่องคำอธิบายขึ้นมาอยู่หน้าสุด */
+            z-index: 9999; 
         }
 
         /* เมื่อคลิกหรือเอาเมาส์ชี้ที่ตัวเลข ให้โชว์กล่องข้อความอย่างเด่นชัด */
